@@ -1,63 +1,49 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-author: "Michael Ebner"
-date: "12/7/2017"
-output: rmarkdown::github_document
----
+Reproducible Research: Peer Assessment 1
+================
+Michael Ebner
+2017-12-11
 
-## Loading and preprocessing the data
+Loading and preprocessing the data
+----------------------------------
 
-. load the packages
-. set the working directory
-. get and clean the data (delte NAs)
-. the result is one raw data frame containing all the data and one data frame without NAs
+. load the packages . set the working directory . get and clean the data (delte NAs) . the result is one raw data frame containing all the data and one data frame without NAs
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
-#getting packages
-library(dplyr)
-library(ggplot2)
-
-#Set Working Directore
-setwd("/Users/mebner/Documents/for_me/R_coursera/GitHub/reproduceable_research")
-
-#get raw data
-act_raw <- read.csv("activity.csv",colClasses = c("integer","Date","character"))
-
-#create one data set without NAs
-act <- na.omit(act_raw)
-
-```
-
-
-## Histogram
+Histogram
+---------
 
 For the histogram I simpley use the hist() function of the standard plot package.
 
-```{r}
-
+``` r
 act_hist <- act[,c(1,2)]
 act_hist <- act_hist %>% group_by(date) %>% summarise_all(funs(sum)) %>% arrange(as.Date(date))
 hist(act_hist$steps,main = 'steps per day\n(NAs excluded)')
 ```
 
-## What is mean total number of steps taken per day?
+![](PA1_michaeEbner_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-1-1.png)
+
+What is mean total number of steps taken per day?
+-------------------------------------------------
 
 Easy to get viea the mean() and median() function.
 
-```{r}
+``` r
 print(round(mean(act_hist$steps)))
+```
+
+    ## [1] 10766
+
+``` r
 print(round(median(act_hist$steps)))
 ```
 
+    ## [1] 10765
 
-## What is the average daily activity pattern?
+What is the average daily activity pattern?
+-------------------------------------------
 
-First I use a dplyr chain to get a data frame aggregated by interval and the mean of steps per each interval.
-Then I plot the data using geom_line() from the ggplot2 pachage.
+First I use a dplyr chain to get a data frame aggregated by interval and the mean of steps per each interval. Then I plot the data using geom\_line() from the ggplot2 pachage.
 
-```{r}
+``` r
 act_int <- act[,c(3,1)]
 act_int <- aggregate(steps~interval, data = act_int, FUN = mean) %>% arrange(interval)
 act_int$interval = as.numeric(act_int$interval)
@@ -70,41 +56,44 @@ ggplot(act_int,aes(x=interval,y=steps_mean,group=1))+
      ggtitle('average daily activity pattern')
 ```
 
+![](PA1_michaeEbner_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-3-1.png)
 
-## The 5-minute interval that, on average, contains the maximum number of steps
+The 5-minute interval that, on average, contains the maximum number of steps
+----------------------------------------------------------------------------
 
 The which.max() function comes in handy here.
 
-```{r}
+``` r
 act_int$interval[which.max(act_int$steps_mean)]
 ```
 
+    ## [1] 835
 
-## Imputing missing values
+Imputing missing values
+-----------------------
 
 Once again I use a dplyr chain to group the data set by interval, then I use mutate and a ifelse statement to exchange missing values with the actual mean of steps for each interval.
 
-```{r}
+``` r
 act_complete <- act_raw %>% group_by(interval) %>% mutate(steps=ifelse(is.na(steps),mean(steps,na.rm=TRUE),steps))
 ```
 
 ### histogram
 
-```{r}
+``` r
 act_hist_comp <- act_complete[,c(1,2)]
 act_hist_comp <- act_hist %>% group_by(date) %>% summarise_all(funs(sum)) %>% arrange(as.Date(date))
 hist(act_hist_comp$steps,main = 'steps per day\n(NAs replaced with interval mean)')
 ```
 
-## Are there differences in activity patterns between weekdays and weekends?
+![](PA1_michaeEbner_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-6-1.png)
 
-Here I proceed pretty much the same way as for the graphs above.
-First I generete a new column giving me the weekdays by using the weekdays() function.
-Using the new column I can create another column via an ifelse statement that distinguishes between weekdays and weekend.
-Finally I create a plot with the ggplot2 package. In order to get panels I use the facet_grid() function of the packge.
+Are there differences in activity patterns between weekdays and weekends?
+-------------------------------------------------------------------------
 
-```{r}
+Here I proceed pretty much the same way as for the graphs above. First I generete a new column giving me the weekdays by using the weekdays() function. Using the new column I can create another column via an ifelse statement that distinguishes between weekdays and weekend. Finally I create a plot with the ggplot2 package. In order to get panels I use the facet\_grid() function of the packge.
 
+``` r
 act$dayoftheweek <- factor(weekdays(act$date))
 act$daytype= ifelse(act$dayoftheweek %in% c("Sunday","Saturday"),"weekend","weekday")
 
@@ -123,5 +112,4 @@ ggplot(act_weekend,aes(x=interval,y=steps_mean,group=1))+
        y = "number of steps")
 ```
 
-
-
+![](PA1_michaeEbner_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-7-1.png)
