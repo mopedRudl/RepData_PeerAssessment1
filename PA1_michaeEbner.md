@@ -1,7 +1,7 @@
 Reproducible Research: Peer Assessment 1
 ================
 Michael Ebner
-2017-12-11
+12/7/2017
 
 Loading and preprocessing the data
 ----------------------------------
@@ -16,7 +16,7 @@ For the histogram I simpley use the hist() function of the standard plot package
 ``` r
 act_hist <- act[,c(1,2)]
 act_hist <- act_hist %>% group_by(date) %>% summarise_all(funs(sum)) %>% arrange(as.Date(date))
-hist(act_hist$steps,main = 'steps per day\n(NAs excluded)')
+hist(act_hist$steps,main = 'steps per day\n(NAs excluded)',xlab = '# of steps')
 ```
 
 ![](PA1_michaeEbner_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-1-1.png)
@@ -24,7 +24,7 @@ hist(act_hist$steps,main = 'steps per day\n(NAs excluded)')
 What is mean total number of steps taken per day?
 -------------------------------------------------
 
-Easy to get viea the mean() and median() function.
+Easy to get by using the mean() and median() functions.
 
 ``` r
 print(round(mean(act_hist$steps)))
@@ -75,15 +75,15 @@ Imputing missing values
 Once again I use a dplyr chain to group the data set by interval, then I use mutate and a ifelse statement to exchange missing values with the actual mean of steps for each interval.
 
 ``` r
-act_complete <- act_raw %>% group_by(interval) %>% mutate(steps=ifelse(is.na(steps),mean(steps,na.rm=TRUE),steps))
+act_complete <- act_raw %>% group_by(interval) %>% mutate(steps=ifelse(is.na(steps),median(steps,na.rm=TRUE),steps))
 ```
 
 ### histogram
 
 ``` r
 act_hist_comp <- act_complete[,c(1,2)]
-act_hist_comp <- act_hist %>% group_by(date) %>% summarise_all(funs(sum)) %>% arrange(as.Date(date))
-hist(act_hist_comp$steps,main = 'steps per day\n(NAs replaced with interval mean)')
+act_hist_comp <- act_hist_comp %>% group_by(date) %>% summarise_all(funs(sum)) %>% arrange(as.Date(date))
+hist(act_hist_comp$steps,main = 'steps per day\n(NAs replaced with interval mean)',xlab = '# of steps')
 ```
 
 ![](PA1_michaeEbner_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-6-1.png)
